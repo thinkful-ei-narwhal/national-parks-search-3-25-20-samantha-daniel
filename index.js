@@ -5,9 +5,26 @@ const URL = 'https://api.nps.gov/api/v1/parks';
 
 
 function makeQuery(params) {
+  console.log(params);
   const queryItems = Object.keys(params);
   console.log(queryItems);
-  const newItems = queryItems.map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+  const newItems = queryItems.map(key => {
+    if (key === 'stateCode') {
+      let scPart = [];
+      for (let i = 0; i < params['stateCode'].length; i++){
+        scPart.push(`${encodeURIComponent(key)}=${encodeURIComponent(params['stateCode'][i])}`);
+      }
+      return scPart.join('&');
+    } else {
+
+      return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`;
+    }
+  }
+
+  );
+
+ console.log(newItems);
+
   return newItems.join('&');
 }
 
@@ -41,9 +58,13 @@ const generateResultsHTML = function (json) {
 
 // api stuff
 
-function getParks(query, limit=10) { // going to be a bit different since we have multiple States to input
+function getParks(query, limit=10) { // unlike normal stuff, theres an array of states sent in by the user
+  let qArr = query.split(',');
+  
+  qArr = qArr.map(el => el.trim());
+
   const params = {
-    stateCode: query,
+    stateCode: qArr,
     limit, 
     key: apiKey,
   };
